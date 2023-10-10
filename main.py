@@ -1,16 +1,36 @@
-# This is a sample Python script.
+import tkinter as tk
+from settings import *
+from timer import Timer
+from words import Words
+from frames import *
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+word_generator = Words()
+starting_words = []
+for i in range(ROWS_OF_WORDS):
+    word_row = []
+    for j in range(WORDS_IN_ROW):
+        word_row.append(word_generator.get_random_word())
+    starting_words.append(word_row)
 
+window = tk.Tk()
+window.title(" Typing Speed Check")
+window.configure(padx=50, pady=50)
+window.configure(background=CREAM)
+window.geometry("600x800")
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+canvas = tk.Canvas(window, width=200, height=100)
+canvas.configure(background=BEIGE, highlightthickness=0)
+timer_text = canvas.create_text(100, 50, text=60, fill=BLUE, font=(FONT_NAME, 35, "bold"))
+canvas.grid(column=0, row=1, sticky="")
 
+text_matrix = TextMatrixFrame(window, starting_words)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+timer = Timer(window, canvas, timer_text)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+start_button = tk.Button(text="Start", font=(FONT_NAME, 8, "bold"), highlightthickness=0, command=timer.start_timer)
+start_button.grid(column=0, row=3)
+
+reset_btn = tk.Button(text="Reset", font=(FONT_NAME, 8, "bold"), highlightthickness=0, command=timer.reset_timer)
+reset_btn.grid(column=0, row=4)
+
+window.mainloop()
