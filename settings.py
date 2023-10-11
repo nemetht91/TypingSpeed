@@ -3,6 +3,7 @@ BEIGE = "#E8DFCA"
 PASTEL = "#AEBDCA"
 BLUE = "#7895B2"
 FONT_NAME = "Courier"
+TITLE = "Typing Speed Tester"
 
 WORDS_IN_ROW = 6
 ROWS_OF_WORDS = 3

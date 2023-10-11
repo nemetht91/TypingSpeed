@@ -26,6 +26,3 @@ class Words:
             return None
         return random.choice(self.words)
 
-
-words = Words()
-print(words.get_random_word())
