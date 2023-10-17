@@ -56,7 +56,7 @@ class LabelFrame(tk.Frame):
     def create_labels(self):
         labels = []
         for i, letter in enumerate(self.word):
-            label = tk.Label(self, text=letter, foreground=color, padx=0, font=(FONT_NAME, 12, "bold"))
+            label = tk.Label(self, text=letter, foreground=BLUE, padx=0, font=(FONT_NAME, 12, "bold"))
             label.grid(row=0, column=i, sticky="w")
             labels.append(label)
         return labels
