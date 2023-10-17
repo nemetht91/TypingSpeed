@@ -11,7 +11,7 @@ class TextMatrixFrame(tk.Frame):
         self.grid(column=0, row=2, sticky='', padx=10, pady=10)
         self.configure(width=MATRIX_WIDTH, height=MATRIX_HEIGHT)
         self.row_frames = self.create_row_frames()
-        self.labels: list[list[LabelFrame]] = self.create_labels(starting_words)
+        self.word_frames: list[list[WordFrame]] = self.create_word_frames(starting_words)
 
     def create_row_frames(self):
         rows = []
@@ -21,32 +21,36 @@ class TextMatrixFrame(tk.Frame):
             rows.append(row)
         return rows
 
-    def create_labels(self, words: list[list[str]]):
+    def create_word_frames(self, words: list[list[str]]):
         labels = []
         for i in range(ROWS_OF_WORDS):
             label_row = []
             row_frame = self.row_frames[i]
             for j in range(WORDS_IN_ROW):
                 word = words[i][j] if words[i][j] else ""
-                label_row.append(self.create_label(word, j, row_frame))
+                label_row.append(self.create_word_frame(word, j, row_frame))
             labels.append(label_row)
         return labels
 
-    def create_label(self, text, column, row_frame):
-        label = LabelFrame(row_frame, column, text)
-        label.grid(row=0, column=column, sticky="w")
-        return label
+    def create_word_frame(self, text, column, row_frame):
+        word_frame = WordFrame(row_frame, column, text)
+        word_frame.grid(row=0, column=column, sticky="w")
+        return word_frame
 
-    def highlight_label(self, row, column):
-        label = self.labels[row][column]
-        label.highlight()
+    def highlight_word(self, row, column):
+        word = self.word_frames[row][column]
+        word.highlight()
 
-    def un_highlight_label(self, row, column):
-        label = self.labels[row][column]
-        label.un_highlight()
+    def un_highlight_word(self, row, column):
+        word = self.word_frames[row][column]
+        word.un_highlight()
+
+    def check_word(self, current_input, row, column):
+        word = self.word_frames[row][column]
+        word.check_letters(current_input)
 
 
-class LabelFrame(tk.Frame):
+class WordFrame(tk.Frame):
     def __init__(self, parent, column, word):
         super().__init__(master=parent)
         self.grid(row=0, column=column, sticky="w", padx=5)
@@ -67,11 +71,22 @@ class LabelFrame(tk.Frame):
 
     def un_highlight(self):
         for label in self.letter_labels:
-            label.configure(background="white", foreground=BLUE)
+            label.configure(background="white")
+
+    def check_letters(self, current_input):
+        for i, letter in enumerate(current_input):
+            if i >= len(self.word):
+                break
+            if letter == self.word[i]:
+                letter_label = self.letter_labels[i]
+                letter_label.configure(foreground=GREEN)
+            else:
+                letter_label = self.letter_labels[i]
+                letter_label.configure(foreground=RED)
 
 
 class TextInputFrame(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, update_notifier):
         super().__init__(master=parent)
         self.grid(column=0, row=3, sticky="")
         self.current_input = tk.StringVar(value="")
@@ -82,11 +97,22 @@ class TextInputFrame(tk.Frame):
         self.text_box.bind("<space>", self.word_finished)
         self.text_box.bind("<BackSpace>", self.check_word_cleared)
         self.text_box.bind("<Key>", self.clear_space)
+        self.update_notifier = update_notifier
+        self.add_trace()
+
+    def add_trace(self):
+        self.current_input.trace_add(mode='write', callback=self.send_notifier)
+
+    def send_notifier(self, var, index, mode):
+        if self.current_input.get() == " " or self.current_input.get() == "":
+            return
+        self.update_notifier(self.current_input.get(), False, False)
 
     def word_finished(self, event):
         self.last_value = self.current_input.get()
         self.typed_in_words.append(self.last_value)
         self.current_input.set("")
+        self.update_notifier(self.current_input.get(), False, True)
 
     def check_word_cleared(self, event):
         current_value = self.text_box.get()[0:-1]
@@ -107,5 +133,7 @@ class TextInputFrame(tk.Frame):
         self.text_box.icursor(len(self.typed_in_words[-1]) + 1)
         self.typed_in_words.pop()
         self.text_box.update()
+        self.update_notifier(self.current_input.get(), True, False)
+
 
 

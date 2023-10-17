@@ -16,12 +16,14 @@ class App(tkinter.Tk):
 
         self.word_generator = Words()
         self.words_matrix = self.get_starting_words()
+        self.column_counter = 0
+        self.row_counter = 0
 
         # layout
         self.create_title_label()
         self.stats_canvas = self.create_stats_canvas()
         self.timer_text = self.stats_canvas.create_text(100, 50, text=60, fill=BLUE, font=(FONT_NAME, 35, "bold"))
-        self.text_input_frame = TextInputFrame(self)
+        self.text_input_frame = TextInputFrame(self, self.input_field_changed)
         self.text_matrix = TextMatrixFrame(self, self.words_matrix)
         self.timer = Timer(self, self.stats_canvas, self.timer_text)
         self.start_button = self.create_start_button()
@@ -60,3 +62,28 @@ class App(tkinter.Tk):
                 word_row.append(self.word_generator.get_random_word())
             starting_words.append(word_row)
         return starting_words
+
+    def increase_word_counters(self):
+        current_row = self.words_matrix[self.row_counter]
+        if self.column_counter == len(current_row)-1:
+            self.row_counter += 1
+            self.column_counter = 0
+        else:
+            self.column_counter += 1
+
+    def decrease_word_counters(self):
+        if self.column_counter == 0 and self.row_counter != 0:
+            self.row_counter -= 1
+            row = self.words_matrix[self.row_counter]
+            self.column_counter = len(row) - 1
+        elif self.column_counter != 0:
+            self.column_counter -= 1
+
+    def input_field_changed(self, current_input: str, field_cleared: bool, input_submitted: bool):
+        if field_cleared:
+            self.decrease_word_counters()
+        elif input_submitted:
+            self.increase_word_counters()
+        else:
+            self.text_matrix.check_word(current_input, self.row_counter, self.column_counter)
+
