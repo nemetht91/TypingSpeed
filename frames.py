@@ -77,3 +77,35 @@ class TextInputFrame(tk.Frame):
         self.current_input = tk.StringVar(value="")
         self.text_box = tk.Entry(self, textvariable=self.current_input, foreground=BLUE)
         self.text_box.grid(column=0, row=0, sticky="")
+        self.typed_in_words = []
+        self.last_value = ""
+        self.text_box.bind("<space>", self.word_finished)
+        self.text_box.bind("<BackSpace>", self.check_word_cleared)
+        self.text_box.bind("<Key>", self.clear_space)
+
+    def word_finished(self, event):
+        self.last_value = self.current_input.get()
+        self.typed_in_words.append(self.last_value)
+        self.current_input.set("")
+
+    def check_word_cleared(self, event):
+        current_value = self.text_box.get()[0:-1]
+        if current_value == "" and self.last_value != "":
+            self.last_value = ""
+        elif current_value == "" and self.last_value == "":
+            self.get_last_word()
+
+    def clear_space(self, event):
+        if self.current_input.get() == " ":
+            self.current_input.set("")
+            self.text_box.update()
+
+    def get_last_word(self):
+        if not self.typed_in_words:
+            return
+        self.current_input.set(self.typed_in_words[-1] + " ")
+        self.text_box.icursor(len(self.typed_in_words[-1]) + 1)
+        self.typed_in_words.pop()
+        self.text_box.update()
+
+
