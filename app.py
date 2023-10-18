@@ -16,7 +16,7 @@ class App(tkinter.Tk):
         self.geometry("650x800")
 
         self.word_generator = Words()
-        self.words_matrix = self.get_starting_words()
+        self.words_buffer = self.get_starting_words()
         self.column_counter = 0
         self.row_counter = 0
         self.update_notifier = UpdateNotifier(word_submitted=self.increase_word_counters,
@@ -28,11 +28,12 @@ class App(tkinter.Tk):
         self.stats_canvas = self.create_stats_canvas()
         self.timer_text = self.stats_canvas.create_text(100, 50, text=60, fill=BLUE, font=(FONT_NAME, 35, "bold"))
         self.text_input_frame = TextInputFrame(self, self.update_notifier)
-        self.text_matrix = TextMatrixFrame(self, self.words_matrix)
+        self.text_matrix = TextMatrixFrame(self, self.words_buffer)
         self.timer = Timer(self, self.stats_canvas, self.timer_text)
         self.start_button = self.create_start_button()
         self.reset_btn = self.create_reset_button()
 
+        self.add_highlight()
         self.mainloop()
 
     def create_title_label(self):
@@ -68,20 +69,30 @@ class App(tkinter.Tk):
         return starting_words
 
     def increase_word_counters(self):
-        current_row = self.words_matrix[self.row_counter]
+        self.remove_highlight()
+        current_row = self.words_buffer[self.row_counter]
         if self.column_counter == len(current_row)-1:
             self.row_counter += 1
             self.column_counter = 0
         else:
             self.column_counter += 1
+        self.add_highlight()
 
     def decrease_word_counters(self):
+        self.remove_highlight()
         if self.column_counter == 0 and self.row_counter != 0:
             self.row_counter -= 1
-            row = self.words_matrix[self.row_counter]
+            row = self.words_buffer[self.row_counter]
             self.column_counter = len(row) - 1
         elif self.column_counter != 0:
             self.column_counter -= 1
+        self.add_highlight()
+
+    def remove_highlight(self):
+        self.text_matrix.un_highlight_word(self.row_counter, self.column_counter)
+
+    def add_highlight(self):
+        self.text_matrix.highlight_word(self.row_counter, self.column_counter)
 
     def input_field_changed(self, current_input):
         self.text_matrix.check_word(current_input, self.row_counter, self.column_counter)

@@ -72,7 +72,11 @@ class WordFrame(tk.Frame):
 
     def un_highlight(self):
         for label in self.letter_labels:
-            label.configure(background="white")
+            color = label.cget("foreground")
+            if color == RED or color == GREEN:
+                label.configure(background="white")
+            else:
+                label.configure(background="white", foreground=BLUE)
 
     def compare_input(self, current_input):
         for i, letter in enumerate(current_input):
@@ -100,7 +104,7 @@ class WordFrame(tk.Frame):
 
     def reset_color(self, current_input):
         for i in range(len(current_input), len(self.word)):
-            self.set_letter_color(i, BLUE)
+            self.set_letter_color(i, CREAM)
 
     def is_input_shorter(self, current_input):
         return len(current_input) < len(self.word)
