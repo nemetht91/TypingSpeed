@@ -1,5 +1,6 @@
 import tkinter
 
+from notifier import UpdateNotifier
 from timer import Timer
 from words import Words
 from frames import *
@@ -18,12 +19,15 @@ class App(tkinter.Tk):
         self.words_matrix = self.get_starting_words()
         self.column_counter = 0
         self.row_counter = 0
+        self.update_notifier = UpdateNotifier(word_submitted=self.increase_word_counters,
+                                              field_cleared=self.decrease_word_counters,
+                                              text_update=self.input_field_changed)
 
         # layout
         self.create_title_label()
         self.stats_canvas = self.create_stats_canvas()
         self.timer_text = self.stats_canvas.create_text(100, 50, text=60, fill=BLUE, font=(FONT_NAME, 35, "bold"))
-        self.text_input_frame = TextInputFrame(self, self.input_field_changed)
+        self.text_input_frame = TextInputFrame(self, self.update_notifier)
         self.text_matrix = TextMatrixFrame(self, self.words_matrix)
         self.timer = Timer(self, self.stats_canvas, self.timer_text)
         self.start_button = self.create_start_button()
@@ -79,11 +83,7 @@ class App(tkinter.Tk):
         elif self.column_counter != 0:
             self.column_counter -= 1
 
-    def input_field_changed(self, current_input: str, field_cleared: bool, input_submitted: bool):
-        if field_cleared:
-            self.decrease_word_counters()
-        elif input_submitted:
-            self.increase_word_counters()
-        else:
-            self.text_matrix.check_word(current_input, self.row_counter, self.column_counter)
+    def input_field_changed(self, current_input):
+        self.text_matrix.check_word(current_input, self.row_counter, self.column_counter)
+
 

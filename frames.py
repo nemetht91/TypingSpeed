@@ -1,5 +1,6 @@
 import tkinter as tk
 from settings import *
+from notifier import UpdateNotifier
 
 MATRIX_WIDTH = 500
 MATRIX_HEIGHT = 400
@@ -47,7 +48,7 @@ class TextMatrixFrame(tk.Frame):
 
     def check_word(self, current_input, row, column):
         word = self.word_frames[row][column]
-        word.check_letters(current_input)
+        word.compare_input(current_input)
 
 
 class WordFrame(tk.Frame):
@@ -73,20 +74,40 @@ class WordFrame(tk.Frame):
         for label in self.letter_labels:
             label.configure(background="white")
 
-    def check_letters(self, current_input):
+    def compare_input(self, current_input):
         for i, letter in enumerate(current_input):
-            if i >= len(self.word):
+            if self.is_out_of_range(i):
                 break
-            if letter == self.word[i]:
-                letter_label = self.letter_labels[i]
-                letter_label.configure(foreground=GREEN)
-            else:
-                letter_label = self.letter_labels[i]
-                letter_label.configure(foreground=RED)
+            self.compare_letter(letter, i)
+        if self.is_input_shorter(current_input):
+            self.reset_color(current_input)
+
+    def compare_letter(self, letter, index):
+        if self.is_correct(letter, index):
+            self.set_letter_color(index, GREEN)
+        else:
+            self.set_letter_color(index, RED)
+
+    def is_out_of_range(self, index):
+        return index >= len(self.word)
+
+    def is_correct(self, letter, index):
+        return letter == self.word[index]
+
+    def set_letter_color(self, index, color):
+        letter_label = self.letter_labels[index]
+        letter_label.configure(foreground=color)
+
+    def reset_color(self, current_input):
+        for i in range(len(current_input), len(self.word)):
+            self.set_letter_color(i, BLUE)
+
+    def is_input_shorter(self, current_input):
+        return len(current_input) < len(self.word)
 
 
 class TextInputFrame(tk.Frame):
-    def __init__(self, parent, update_notifier):
+    def __init__(self, parent, update_notifier: UpdateNotifier):
         super().__init__(master=parent)
         self.grid(column=0, row=3, sticky="")
         self.current_input = tk.StringVar(value="")
@@ -94,46 +115,64 @@ class TextInputFrame(tk.Frame):
         self.text_box.grid(column=0, row=0, sticky="")
         self.typed_in_words = []
         self.last_value = ""
-        self.text_box.bind("<space>", self.word_finished)
+        self.is_reset = False
+        # self.text_box.bind("<space>", self.word_finished)
         self.text_box.bind("<BackSpace>", self.check_word_cleared)
-        self.text_box.bind("<Key>", self.clear_space)
-        self.update_notifier = update_notifier
+        self.text_box.bind("<Key>", self.set_last_value)
+        self.update_notifier: UpdateNotifier = update_notifier
         self.add_trace()
 
     def add_trace(self):
-        self.current_input.trace_add(mode='write', callback=self.send_notifier)
+        self.current_input.trace_add(mode='write', callback=self.check_input)
 
-    def send_notifier(self, var, index, mode):
-        if self.current_input.get() == " " or self.current_input.get() == "":
+    def check_input(self, var, index, mode):
+        current_input = self.current_input.get()
+        if current_input == " ":
+            self.clear_space()
             return
-        self.update_notifier(self.current_input.get(), False, False)
+        if self.is_input_submitted():
+            self.word_finished()
+            return
+        if self.is_reset:
+            self.is_reset = False
+            return
+        self.send_notifier()
 
-    def word_finished(self, event):
+    def set_last_value(self, event):
         self.last_value = self.current_input.get()
+
+    def send_notifier(self):
+        self.update_notifier.text_updated(self.current_input.get())
+
+    def is_input_submitted(self):
+        return " " in self.current_input.get()
+
+    def word_finished(self):
+        self.last_value = self.current_input.get().strip()
         self.typed_in_words.append(self.last_value)
         self.current_input.set("")
-        self.update_notifier(self.current_input.get(), False, True)
+        self.update_notifier.word_submitted()
 
     def check_word_cleared(self, event):
-        current_value = self.text_box.get()[0:-1]
+        current_value = self.text_box.get()
         if current_value == "" and self.last_value != "":
             self.last_value = ""
-        elif current_value == "" and self.last_value == "":
+        if current_value == "" and self.last_value == "":
             self.get_last_word()
 
-    def clear_space(self, event):
-        if self.current_input.get() == " ":
-            self.current_input.set("")
-            self.text_box.update()
+    def clear_space(self):
+        self.current_input.set("")
+        self.text_box.update()
 
     def get_last_word(self):
         if not self.typed_in_words:
             return
-        self.current_input.set(self.typed_in_words[-1] + " ")
+        self.is_reset = True
+        self.current_input.set(self.typed_in_words[-1] + "*")
         self.text_box.icursor(len(self.typed_in_words[-1]) + 1)
         self.typed_in_words.pop()
         self.text_box.update()
-        self.update_notifier(self.current_input.get(), True, False)
+        self.update_notifier.field_cleared()
 
 
 
