@@ -1,6 +1,7 @@
 import tkinter as tk
 from settings import *
 from notifier import UpdateNotifier
+from wordgenerator import WordGenerator
 
 MATRIX_WIDTH = 500
 MATRIX_HEIGHT = 400
@@ -11,7 +12,11 @@ class TextMatrixFrame(tk.Frame):
         super().__init__(master=parent)
         self.grid(column=0, row=2, sticky='', padx=10, pady=10)
         self.configure(width=MATRIX_WIDTH, height=MATRIX_HEIGHT)
+        self.word_generator = WordGenerator()
         self.row_frames = self.init_rows(starting_words)
+        self.column_counter = 0
+        self.row_counter = 0
+        self.highlight_word()
 
     def init_rows(self, starting_words: list[list[str]]):
         self.check_starting_words(starting_words)
@@ -27,12 +32,12 @@ class TextMatrixFrame(tk.Frame):
             raise ValueError(f"Unexpected number of rows in starting words! Expected: {ROWS_OF_WORDS}; "
                              f"received: {len(starting_words)}")
 
-    def highlight_word(self, row_index, column_index):
-        word = self.get_word(row_index, column_index)
+    def highlight_word(self):
+        word = self.get_word(self.row_counter, self.column_counter)
         word.highlight()
 
-    def un_highlight_word(self, row_index, column_index):
-        word = self.get_word(row_index, column_index)
+    def un_highlight_word(self):
+        word = self.get_word(self.row_counter, self.column_counter)
         word.un_highlight()
 
     def get_word(self, row_index, column_index):
@@ -47,32 +52,90 @@ class TextMatrixFrame(tk.Frame):
         if row_index < 0 or row_index >= len(self.row_frames):
             raise IndexError(f"Row doesn't exist at index: {row_index}")
 
-    def check_word(self, current_input, row, column):
-        word = self.get_word(row, column)
+    def check_word(self, current_input):
+        word = self.get_word(self.row_counter, self.column_counter)
         word.compare_input(current_input)
 
-    def add_new_row(self, words: list[str]):
-        self.hide_top_row()
-        self.create_new_row(words)
+    def hide_row(self, index):
+        row = self.get_row(index)
+        row.hide()
 
-    def hide_top_row(self):
-        top_row_index = len(self.row_frames) - ROWS_OF_WORDS
-        self.check_row_exist(top_row_index)
-        top_row = self.row_frames[top_row_index]
-        top_row.grid_forget()
+    def show_row(self, index):
+        row = self.get_row(index)
+        row.show()
 
-    def create_new_row(self, words: list[str]):
+    def create_new_row(self):
+        words = self.word_generator.get_word_list(WORDS_IN_ROW)
         new_row = RowFrame(self, len(self.row_frames), words)
         self.row_frames.append(new_row)
 
     def get_number_of_rows(self):
         return len(self.row_frames) - 1
 
+    def move_to_next_word(self):
+        self.un_highlight_word()
+        self.increment_counters()
+        self.highlight_word()
+
+    def increment_counters(self):
+        if self.is_last_in_row():
+            self.hide_current_rows()
+            self.row_counter += 1
+            self.column_counter = 0
+            self.check_to_add_new_row()
+            self.show_current_rows()
+        else:
+            self.column_counter += 1
+
+    def is_last_in_row(self):
+        return self.column_counter == WORDS_IN_ROW-1
+
+    def move_to_previous_word(self):
+        self.un_highlight_word()
+        self.decrement_counters()
+        self.highlight_word()
+
+    def decrement_counters(self):
+        if self.column_counter == 0 and self.row_counter != 0:
+            self.hide_current_rows()
+            self.row_counter -= 1
+            self.column_counter = WORDS_IN_ROW - 1
+            self.show_current_rows()
+        elif self.column_counter != 0:
+            self.column_counter -= 1
+
+    def check_to_add_new_row(self):
+        if self.is_last_row():
+            self.create_new_row()
+
+    def hide_current_rows(self):
+        start, end = self.get_current_row_range()
+        for i in range(start, end):
+            self.hide_row(i)
+
+    def get_current_row_range(self):
+        if self.row_counter < (ROWS_OF_WORDS - 1):
+            start = 0
+            end = ROWS_OF_WORDS
+        else:
+            start = self.row_counter - 1
+            end = self.row_counter + 2
+        return start, end
+
+    def show_current_rows(self):
+        start, end = self.get_current_row_range()
+        for i in range(start, end):
+            self.show_row(i)
+
+    def is_last_row(self):
+        return self.row_counter == self.get_number_of_rows()
+
 
 class RowFrame(tk.Frame):
     def __init__(self, parent, row_index, words: list[str]):
         super().__init__(master=parent, width=MATRIX_WIDTH, height=MATRIX_HEIGHT / ROWS_OF_WORDS)
-        self.grid(column=0, row=row_index, sticky="")
+        self.row_index = row_index
+        self.show()
         self.word_frames = self.fill(words)
 
     def fill(self, words: list[str]):
@@ -98,6 +161,12 @@ class RowFrame(tk.Frame):
     def check_word_exist(self, index):
         if index < 0 or index >= len(self.word_frames):
             raise IndexError(f"Word doesn't exist at index: {index}")
+
+    def show(self):
+        self.grid(column=0, row=self.row_index, sticky="")
+
+    def hide(self):
+        self.grid_remove()
 
 
 class WordFrame(tk.Frame):
