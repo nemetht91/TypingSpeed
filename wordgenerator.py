@@ -3,7 +3,7 @@ import random
 WORDS_fILE = "assets/words.txt"
 
 
-class Words:
+class WordGenerator:
     def __init__(self):
         self.words_file = WORDS_fILE
         self.words = self._get_words_list()
@@ -21,8 +21,20 @@ class Words:
             return []
         return raw_text.split("\n")
 
-    def get_random_word(self):
+    def get_word(self):
         if not self.words:
             return None
         return random.choice(self.words)
+
+    def get_word_list(self, number_of_words):
+        words = []
+        for i in range(number_of_words):
+            words.append(self.get_word())
+        return words
+
+    def get_word_matrix(self, rows, columns):
+        matrix = []
+        for i in range(rows):
+            matrix.append(self.get_word_list(columns))
+        return matrix
 

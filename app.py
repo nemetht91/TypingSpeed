@@ -2,7 +2,7 @@ import tkinter
 
 from notifier import UpdateNotifier
 from timer import Timer
-from words import Words
+from wordgenerator import WordGenerator
 from frames import *
 
 
@@ -15,7 +15,7 @@ class App(tkinter.Tk):
         self.configure(background=CREAM)
         self.geometry("650x800")
 
-        self.word_generator = Words()
+        self.word_generator = WordGenerator()
         self.words_buffer = self.get_starting_words()
         self.column_counter = 0
         self.row_counter = 0
@@ -61,16 +61,7 @@ class App(tkinter.Tk):
         return reset_btn
 
     def get_starting_words(self):
-        starting_words = []
-        for i in range(ROWS_OF_WORDS):
-            starting_words.append(self.get_new_row())
-        return starting_words
-
-    def get_new_row(self):
-        new_row = []
-        for i in range(WORDS_IN_ROW):
-            new_row.append(self.word_generator.get_random_word())
-        return new_row
+        return self.word_generator.get_word_matrix(ROWS_OF_WORDS, WORDS_IN_ROW)
 
     def increase_word_counters(self):
         self.remove_highlight()
@@ -84,8 +75,8 @@ class App(tkinter.Tk):
 
     def new_row_required(self):
         if self.row_counter == self.text_matrix.get_number_of_rows():
-            new_row = self.get_new_row()
-            self.text_matrix.add_new_row(new_row)
+            words = self.word_generator.get_word_list(WORDS_IN_ROW)
+            self.text_matrix.add_new_row(words)
             #self.row_counter -= 1
 
     def decrease_word_counters(self):
