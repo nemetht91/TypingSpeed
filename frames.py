@@ -11,44 +11,93 @@ class TextMatrixFrame(tk.Frame):
         super().__init__(master=parent)
         self.grid(column=0, row=2, sticky='', padx=10, pady=10)
         self.configure(width=MATRIX_WIDTH, height=MATRIX_HEIGHT)
-        self.row_frames = self.create_row_frames()
-        self.word_frames: list[list[WordFrame]] = self.create_word_frames(starting_words)
+        self.row_frames = self.init_rows(starting_words)
 
-    def create_row_frames(self):
+    def init_rows(self, starting_words: list[list[str]]):
+        self.check_starting_words(starting_words)
         rows = []
         for i in range(ROWS_OF_WORDS):
-            row = tk.Frame(self, width=MATRIX_WIDTH, height=MATRIX_HEIGHT / ROWS_OF_WORDS)
-            row.grid(column=0, row=i, sticky="")
+            words = starting_words[i]
+            row = RowFrame(self, i, words)
             rows.append(row)
         return rows
 
-    def create_word_frames(self, words: list[list[str]]):
-        labels = []
-        for i in range(ROWS_OF_WORDS):
-            label_row = []
-            row_frame = self.row_frames[i]
-            for j in range(WORDS_IN_ROW):
-                word = words[i][j] if words[i][j] else ""
-                label_row.append(self.create_word_frame(word, j, row_frame))
-            labels.append(label_row)
-        return labels
+    def check_starting_words(self, starting_words: list[list[str]]):
+        if len(starting_words) != ROWS_OF_WORDS:
+            raise ValueError(f"Unexpected number of rows in starting words! Expected: {ROWS_OF_WORDS}; "
+                             f"received: {len(starting_words)}")
 
-    def create_word_frame(self, text, column, row_frame):
-        word_frame = WordFrame(row_frame, column, text)
+    def highlight_word(self, row_index, column_index):
+        word = self.get_word(row_index, column_index)
+        word.highlight()
+
+    def un_highlight_word(self, row_index, column_index):
+        word = self.get_word(row_index, column_index)
+        word.un_highlight()
+
+    def get_word(self, row_index, column_index):
+        row = self.get_row(row_index)
+        return row.get_word(column_index)
+
+    def get_row(self, row_index):
+        self.check_row_exist(row_index)
+        return self.row_frames[row_index]
+
+    def check_row_exist(self, row_index):
+        if row_index < 0 or row_index >= len(self.row_frames):
+            raise IndexError(f"Row doesn't exist at index: {row_index}")
+
+    def check_word(self, current_input, row, column):
+        word = self.get_word(row, column)
+        word.compare_input(current_input)
+
+    def add_new_row(self, words: list[str]):
+        self.hide_top_row()
+        self.create_new_row(words)
+
+    def hide_top_row(self):
+        top_row_index = len(self.row_frames) - ROWS_OF_WORDS
+        self.check_row_exist(top_row_index)
+        top_row = self.row_frames[top_row_index]
+        top_row.grid_forget()
+
+    def create_new_row(self, words: list[str]):
+        new_row = RowFrame(self, len(self.row_frames), words)
+        self.row_frames.append(new_row)
+
+    def get_number_of_rows(self):
+        return len(self.row_frames) - 1
+
+
+class RowFrame(tk.Frame):
+    def __init__(self, parent, row_index, words: list[str]):
+        super().__init__(master=parent, width=MATRIX_WIDTH, height=MATRIX_HEIGHT / ROWS_OF_WORDS)
+        self.grid(column=0, row=row_index, sticky="")
+        self.word_frames = self.fill(words)
+
+    def fill(self, words: list[str]):
+        if not words:
+            return
+        word_frames = []
+        for i, word in enumerate(words):
+            word_frames.append(self.create_word_frame(word, i))
+        return word_frames
+
+    def create_word_frame(self, text, column):
+        word_frame = WordFrame(self, column, text)
         word_frame.grid(row=0, column=column, sticky="w")
         return word_frame
 
-    def highlight_word(self, row, column):
-        word = self.word_frames[row][column]
-        word.highlight()
+    def shift(self, new_index):
+        self.grid(column=0, row=new_index, sticky="")
 
-    def un_highlight_word(self, row, column):
-        word = self.word_frames[row][column]
-        word.un_highlight()
+    def get_word(self, index):
+        self.check_word_exist(index)
+        return self.word_frames[index]
 
-    def check_word(self, current_input, row, column):
-        word = self.word_frames[row][column]
-        word.compare_input(current_input)
+    def check_word_exist(self, index):
+        if index < 0 or index >= len(self.word_frames):
+            raise IndexError(f"Word doesn't exist at index: {index}")
 
 
 class WordFrame(tk.Frame):

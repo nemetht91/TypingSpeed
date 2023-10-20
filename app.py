@@ -34,6 +34,7 @@ class App(tkinter.Tk):
         self.reset_btn = self.create_reset_button()
 
         self.add_highlight()
+        self.text_input_frame.text_box.focus()
         self.mainloop()
 
     def create_title_label(self):
@@ -62,28 +63,36 @@ class App(tkinter.Tk):
     def get_starting_words(self):
         starting_words = []
         for i in range(ROWS_OF_WORDS):
-            word_row = []
-            for j in range(WORDS_IN_ROW):
-                word_row.append(self.word_generator.get_random_word())
-            starting_words.append(word_row)
+            starting_words.append(self.get_new_row())
         return starting_words
+
+    def get_new_row(self):
+        new_row = []
+        for i in range(WORDS_IN_ROW):
+            new_row.append(self.word_generator.get_random_word())
+        return new_row
 
     def increase_word_counters(self):
         self.remove_highlight()
-        current_row = self.words_buffer[self.row_counter]
-        if self.column_counter == len(current_row)-1:
+        if self.column_counter == WORDS_IN_ROW-1:
             self.row_counter += 1
             self.column_counter = 0
+            self.new_row_required()
         else:
             self.column_counter += 1
         self.add_highlight()
+
+    def new_row_required(self):
+        if self.row_counter == self.text_matrix.get_number_of_rows():
+            new_row = self.get_new_row()
+            self.text_matrix.add_new_row(new_row)
+            #self.row_counter -= 1
 
     def decrease_word_counters(self):
         self.remove_highlight()
         if self.column_counter == 0 and self.row_counter != 0:
             self.row_counter -= 1
-            row = self.words_buffer[self.row_counter]
-            self.column_counter = len(row) - 1
+            self.column_counter = WORDS_IN_ROW - 1
         elif self.column_counter != 0:
             self.column_counter -= 1
         self.add_highlight()
