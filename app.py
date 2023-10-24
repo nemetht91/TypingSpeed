@@ -62,8 +62,8 @@ class App(tkinter.Tk):
     def get_starting_words(self):
         return self.word_generator.get_word_matrix(ROWS_OF_WORDS, WORDS_IN_ROW)
 
-    def next_word_request(self):
-        self.text_matrix.move_to_next_word()
+    def next_word_request(self, current_input):
+        self.text_matrix.move_to_next_word(current_input)
 
     def previous_word_request(self):
         self.text_matrix.move_to_previous_word()

@@ -72,10 +72,15 @@ class TextMatrixFrame(tk.Frame):
     def get_number_of_rows(self):
         return len(self.row_frames) - 1
 
-    def move_to_next_word(self):
+    def move_to_next_word(self, current_input):
+        self.final_check(current_input)
         self.un_highlight_word()
         self.increment_counters()
         self.highlight_word()
+
+    def final_check(self, current_input):
+        word = self.get_word(self.row_counter, self.column_counter)
+        word.check_remainder(current_input, RED)
 
     def increment_counters(self):
         if self.is_last_in_row():
@@ -199,10 +204,10 @@ class WordFrame(tk.Frame):
     def compare_input(self, current_input):
         for i, letter in enumerate(current_input):
             if self.is_out_of_range(i):
+                self.set_word_color(RED)
                 break
             self.compare_letter(letter, i)
-        if self.is_input_shorter(current_input):
-            self.reset_color(current_input)
+        self.check_remainder(current_input, CREAM)
 
     def compare_letter(self, letter, index):
         if self.is_correct(letter, index):
@@ -220,12 +225,23 @@ class WordFrame(tk.Frame):
         letter_label = self.letter_labels[index]
         letter_label.configure(foreground=color)
 
-    def reset_color(self, current_input):
+    def set_word_color(self, color):
+        for letter in self.letter_labels:
+            letter.configure(foreground=color)
+
+    def check_remainder(self, current_input, remainder_color):
+        if self.is_input_shorter(current_input):
+            self.set_color_for_remainder(current_input, remainder_color)
+
+    def set_color_for_remainder(self, current_input, color):
         for i in range(len(current_input), len(self.word)):
-            self.set_letter_color(i, CREAM)
+            self.set_letter_color(i, color)
 
     def is_input_shorter(self, current_input):
         return len(current_input) < len(self.word)
+
+    def is_input_longer(self, current_input):
+        return len(current_input) > len(self.word)
 
 
 class TextInputFrame(tk.Frame):
@@ -273,7 +289,7 @@ class TextInputFrame(tk.Frame):
         self.last_value = self.current_input.get().strip()
         self.typed_in_words.append(self.last_value)
         self.current_input.set("")
-        self.update_notifier.word_submitted()
+        self.update_notifier.word_submitted(self.last_value)
 
     def check_word_cleared(self, event):
         current_value = self.text_box.get()

@@ -3,7 +3,7 @@ from typing import Callable
 
 class UpdateNotifier:
     def __init__(self,
-                 word_submitted: Callable[[None], None],
+                 word_submitted: Callable[[str], None],
                  field_cleared: Callable[[None], None],
                  text_update: Callable[[str], None]):
         self.word_submitted = word_submitted
