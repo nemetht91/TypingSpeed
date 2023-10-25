@@ -22,11 +22,10 @@ class App(tkinter.Tk):
 
         # layout
         self.create_title_label()
-        self.stats_canvas = self.create_stats_canvas()
-        self.timer_text = self.stats_canvas.create_text(100, 50, text=60, fill=BLUE, font=(FONT_NAME, 35, "bold"))
+        self.stats_frame = StatisticsFrame(self, self.statistics)
         self.text_input_frame = TextInputFrame(self, self.update_notifier)
         self.text_matrix = TextMatrixFrame(self, self.words_buffer, self.statistics)
-        self.timer = Timer(self, self.stats_canvas, self.timer_text)
+        self.timer = Timer(self, label_update_func=self.stats_frame.update_timer_label)
         self.start_button = self.create_start_button()
         self.reset_btn = self.create_reset_button()
 
@@ -61,7 +60,7 @@ class App(tkinter.Tk):
 
     def next_word_request(self, current_input):
         self.text_matrix.move_to_next_word(current_input)
-        self.print_statistics()
+        self.stats_frame.update_labels()
 
     def previous_word_request(self):
         self.text_matrix.move_to_previous_word()
