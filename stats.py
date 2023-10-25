@@ -34,4 +34,7 @@ class Statistics:
         correct_chars = [stat.correct_characters for stat in self.word_stats]
         return sum(correct_chars)
 
+    def remove_last(self):
+        self.word_stats.pop()
+
 

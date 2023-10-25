@@ -1,9 +1,7 @@
 import tkinter
-
-from notifier import UpdateNotifier
 from timer import Timer
-from wordgenerator import WordGenerator
 from frames import *
+from stats import Statistics
 
 
 class App(tkinter.Tk):
@@ -17,18 +15,17 @@ class App(tkinter.Tk):
 
         self.word_generator = WordGenerator()
         self.words_buffer = self.get_starting_words()
-        self.column_counter = 0
-        self.row_counter = 0
         self.update_notifier = UpdateNotifier(word_submitted=self.next_word_request,
                                               field_cleared=self.previous_word_request,
                                               text_update=self.input_field_changed)
+        self.statistics = Statistics()
 
         # layout
         self.create_title_label()
         self.stats_canvas = self.create_stats_canvas()
         self.timer_text = self.stats_canvas.create_text(100, 50, text=60, fill=BLUE, font=(FONT_NAME, 35, "bold"))
         self.text_input_frame = TextInputFrame(self, self.update_notifier)
-        self.text_matrix = TextMatrixFrame(self, self.words_buffer)
+        self.text_matrix = TextMatrixFrame(self, self.words_buffer, self.statistics)
         self.timer = Timer(self, self.stats_canvas, self.timer_text)
         self.start_button = self.create_start_button()
         self.reset_btn = self.create_reset_button()
@@ -64,11 +61,16 @@ class App(tkinter.Tk):
 
     def next_word_request(self, current_input):
         self.text_matrix.move_to_next_word(current_input)
+        self.print_statistics()
 
     def previous_word_request(self):
         self.text_matrix.move_to_previous_word()
 
     def input_field_changed(self, current_input):
         self.text_matrix.check_word(current_input)
+
+    def print_statistics(self):
+        print(f"Words: {self.statistics.get_correct_words_count()}/{self.statistics.get_word_count()}")
+        print(f"Chars: {self.statistics.get_correct_char_count()}/{self.statistics.get_char_count()}")
 
 

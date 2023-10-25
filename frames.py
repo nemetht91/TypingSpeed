@@ -2,17 +2,19 @@ import tkinter as tk
 from settings import *
 from notifier import UpdateNotifier
 from wordgenerator import WordGenerator
+from stats import Statistics
 
 MATRIX_WIDTH = 500
 MATRIX_HEIGHT = 400
 
 
 class TextMatrixFrame(tk.Frame):
-    def __init__(self, parent, starting_words: list[list[str]]):
+    def __init__(self, parent, starting_words: list[list[str]], statistics: Statistics):
         super().__init__(master=parent)
         self.grid(column=0, row=2, sticky='', padx=10, pady=10)
         self.configure(width=MATRIX_WIDTH, height=MATRIX_HEIGHT)
         self.word_generator = WordGenerator()
+        self.statistics = statistics
         self.row_frames = self.init_rows(starting_words)
         self.column_counter = 0
         self.row_counter = 0
@@ -79,8 +81,16 @@ class TextMatrixFrame(tk.Frame):
         self.highlight_word()
 
     def final_check(self, current_input):
+        self.add_statistics(current_input)
         word = self.get_word(self.row_counter, self.column_counter)
         word.check_remainder(current_input, RED)
+
+    def add_statistics(self, current_input: str):
+        word = self.get_word(self.row_counter, self.column_counter)
+        if word.word == current_input:
+            self.statistics.add_words(word.word, True, len(word.word))
+            return
+        self.statistics.add_words(word.word, False, word.get_correct_letter_count())
 
     def increment_counters(self):
         if self.is_last_in_row():
@@ -96,6 +106,7 @@ class TextMatrixFrame(tk.Frame):
         return self.column_counter == WORDS_IN_ROW-1
 
     def move_to_previous_word(self):
+        self.statistics.remove_last()
         self.un_highlight_word()
         self.decrement_counters()
         self.highlight_word()
@@ -242,6 +253,10 @@ class WordFrame(tk.Frame):
 
     def is_input_longer(self, current_input):
         return len(current_input) > len(self.word)
+
+    def get_correct_letter_count(self):
+        correct_letters = [letter for letter in self.letter_labels if letter.cget("foreground") == GREEN]
+        return len(correct_letters)
 
 
 class TextInputFrame(tk.Frame):
