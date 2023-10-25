@@ -303,7 +303,7 @@ class WordFrame(tk.Frame):
 class TextInputFrame(tk.Frame):
     def __init__(self, parent, update_notifier: UpdateNotifier):
         super().__init__(master=parent)
-        self.grid(column=0, row=3, sticky="")
+        #self.grid(column=0, row=3, sticky="")
         self.current_input = tk.StringVar(value="")
         self.text_box = tk.Entry(self, textvariable=self.current_input, foreground=BLUE)
         self.text_box.grid(column=0, row=0, sticky="")
@@ -367,6 +367,13 @@ class TextInputFrame(tk.Frame):
         self.typed_in_words.pop()
         self.text_box.update()
         self.update_notifier.field_cleared()
+
+    def show(self):
+        self.current_input.set("")
+        self.grid(column=0, row=3, sticky="")
+
+    def hide(self):
+        self.grid_forget()
 
 
 

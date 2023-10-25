@@ -25,11 +25,10 @@ class App(tkinter.Tk):
         self.stats_frame = StatisticsFrame(self, self.statistics)
         self.text_input_frame = TextInputFrame(self, self.update_notifier)
         self.text_matrix = TextMatrixFrame(self, self.words_buffer, self.statistics)
-        self.timer = Timer(self, label_update_func=self.stats_frame.update_timer_label)
+        self.timer = Timer(self, label_update_func=self.stats_frame.update_timer_label, stop_func=self.stop)
         self.start_button = self.create_start_button()
         self.reset_btn = self.create_reset_button()
 
-        self.text_input_frame.text_box.focus()
         self.mainloop()
 
     def create_title_label(self):
@@ -45,13 +44,13 @@ class App(tkinter.Tk):
 
     def create_start_button(self):
         start_button = tk.Button(text="Start", font=(FONT_NAME, 8, "bold"), highlightthickness=0,
-                                 command=self.timer.start_timer)
+                                 command=self.start)
         start_button.grid(column=0, row=4)
         return start_button
 
     def create_reset_button(self):
         reset_btn = tk.Button(text="Reset", font=(FONT_NAME, 8, "bold"), highlightthickness=0,
-                              command=self.timer.reset_timer)
+                              command=self.reset, state="disabled")
         reset_btn.grid(column=0, row=5)
         return reset_btn
 
@@ -67,6 +66,25 @@ class App(tkinter.Tk):
 
     def input_field_changed(self, current_input):
         self.text_matrix.check_word(current_input)
+
+    def start(self):
+        self.text_input_frame.show()
+        self.text_input_frame.text_box.focus()
+        self.timer.start_timer()
+        self.start_button.configure(state="disabled")
+
+    def stop(self):
+        self.text_matrix.focus()
+        self.text_input_frame.hide()
+        self.reset_btn.configure(state="normal")
+
+    def reset(self):
+        self.statistics.clear()
+        self.text_matrix.grid_forget()
+        self.text_matrix = TextMatrixFrame(self, self.get_starting_words(), self.statistics)
+        self.stats_frame.update_labels()
+        self.start_button.configure(state="normal")
+        self.reset_btn.configure(state="disabled")
 
     def print_statistics(self):
         print(f"Words: {self.statistics.get_correct_words_count()}/{self.statistics.get_word_count()}")

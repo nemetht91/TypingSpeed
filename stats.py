@@ -47,3 +47,6 @@ class Statistics:
             return 0
         char_counts = [len(word_stat.word) for word_stat in correct_words]
         return sum(char_counts)
+
+    def clear(self):
+        self.word_stats = []
