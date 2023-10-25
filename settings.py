@@ -9,3 +9,4 @@ RED = "red"
 
 WORDS_IN_ROW = 6
 ROWS_OF_WORDS = 3
+TIMER_LENGTH = 60
