@@ -23,9 +23,7 @@ class Statistics:
         return len(self.word_stats)
 
     def get_correct_words_count(self):
-        if not self.word_stats:
-            return 0
-        correct_words = [stat for stat in self.word_stats if stat.is_correct]
+        correct_words = self.get_correct_words()
         return len(correct_words)
 
     def get_correct_char_count(self):
@@ -37,4 +35,15 @@ class Statistics:
     def remove_last(self):
         self.word_stats.pop()
 
+    def get_correct_words(self):
+        if not self.word_stats:
+            return []
+        correct_words = [stat for stat in self.word_stats if stat.is_correct]
+        return correct_words
 
+    def get_correct_char_count(self):
+        correct_words = self.get_correct_words()
+        if not correct_words:
+            return 0
+        char_counts = [len(word_stat.word) for word_stat in correct_words]
+        return sum(char_counts)
