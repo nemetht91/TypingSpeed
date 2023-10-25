@@ -3,9 +3,50 @@ from settings import *
 from notifier import UpdateNotifier
 from wordgenerator import WordGenerator
 from stats import Statistics
+from timer import Timer
 
 MATRIX_WIDTH = 500
 MATRIX_HEIGHT = 400
+
+
+class StatisticsFrame(tk.Frame):
+    def __init__(self, parent, statistics: Statistics):
+        super().__init__(master=parent)
+        self.grid(column=0, row=1, sticky='', padx=10, pady=10)
+        self.statistics = statistics
+        self.create_leading_labels()
+        self.cpm_label = self.create_cpm_label()
+        self.wpm_label = self.create_wpm_label()
+        self.timer_label = self.create_timer_label()
+
+    def create_leading_labels(self):
+        tk.Label(self, text="Corrected CPM:", padx=10).grid(column=0, row=0, sticky="w")
+        tk.Label(self, text="WPM:", padx=10).grid(column=2, row=0, sticky="w")
+        tk.Label(self, text="Time Left:", padx=10).grid(column=4, row=0, sticky="w")
+
+    def create_cpm_label(self):
+        cpm_label = tk.Label(self, text=0)
+        cpm_label.grid(column=1, row=0, sticky="w")
+        return cpm_label
+
+    def create_wpm_label(self):
+        wpm_label = tk.Label(self, text=0)
+        wpm_label.grid(column=3, row=0, sticky="w")
+        return wpm_label
+
+    def create_timer_label(self):
+        timer_label = tk.Label(self, text=TIMER_LENGTH)
+        timer_label.grid(column=5, row=0, sticky="w")
+        return timer_label
+
+    def update_labels(self):
+        cpm = self.statistics.get_correct_char_count()
+        self.cpm_label.configure(text=cpm)
+        wpm = self.statistics.get_correct_words_count()
+        self.wpm_label.configure(text=wpm)
+
+    def update_timer_label(self, timer_count):
+        self.timer_label.configure(text=timer_count)
 
 
 class TextMatrixFrame(tk.Frame):
