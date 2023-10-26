@@ -3,10 +3,44 @@ from settings import *
 from notifier import UpdateNotifier
 from wordgenerator import WordGenerator
 from stats import Statistics
-from timer import Timer
+from typing import Callable
 
 MATRIX_WIDTH = 500
 MATRIX_HEIGHT = 400
+
+
+class ButtonFrame(tk.Frame):
+    def __init__(self, parent, start_func: Callable, reset_func: Callable):
+        super().__init__(master=parent)
+        self.grid(column=0, row=4, sticky='', padx=10, pady=10)
+        self.start_func = start_func
+        self.reset_func = reset_func
+        self.start_button = self.create_start_button()
+        self.reset_button = self.create_reset_button()
+
+    def create_start_button(self):
+        start_button = tk.Button(self, text="Start", font=(FONT_NAME, 8, "bold"), highlightthickness=0,
+                                 command=self.start)
+        start_button.grid(column=0, row=0)
+        return start_button
+
+    def create_reset_button(self):
+        reset_btn = tk.Button(self, text="Reset", font=(FONT_NAME, 8, "bold"), highlightthickness=0,
+                              command=self.reset, state="disabled")
+        reset_btn.grid(column=1, row=0)
+        return reset_btn
+
+    def start(self):
+        self.start_func()
+        self.start_button.configure(state="disabled")
+
+    def reset(self):
+        self.reset_func()
+        self.start_button.configure(state="normal")
+        self.reset_button.configure(state="disabled")
+
+    def stop(self):
+        self.reset_button.configure(state="normal")
 
 
 class StatisticsFrame(tk.Frame):
@@ -20,24 +54,35 @@ class StatisticsFrame(tk.Frame):
         self.timer_label = self.create_timer_label()
 
     def create_leading_labels(self):
-        tk.Label(self, text="Corrected CPM:", padx=10).grid(column=0, row=0, sticky="w")
-        tk.Label(self, text="WPM:", padx=10).grid(column=2, row=0, sticky="w")
-        tk.Label(self, text="Time Left:", padx=10).grid(column=4, row=0, sticky="w")
+        self.create_leading_label(text="Corrected CPM:", column=0)
+        self.create_leading_label(text="WPM:", column=2)
+        self.create_leading_label(text="Time Left:", column=4)
+
+    def create_leading_label(self, text, column):
+        tk.Label(self,
+                 text=text,
+                 padx=10,
+                 background=BLUE,
+                 foreground=CREAM,
+                 font=(FONT_NAME, 14, "bold")).grid(column=column, row=0, sticky="w")
+
+    def create_value_label(self, text, column):
+        label = tk.Label(self,
+                         text=text,
+                         background=BLUE,
+                         foreground=CREAM,
+                         font=(FONT_NAME, 14, "normal"))
+        label.grid(column=column, row=0, sticky="w")
+        return label
 
     def create_cpm_label(self):
-        cpm_label = tk.Label(self, text=0)
-        cpm_label.grid(column=1, row=0, sticky="w")
-        return cpm_label
+        return self.create_value_label(text=0, column=1)
 
     def create_wpm_label(self):
-        wpm_label = tk.Label(self, text=0)
-        wpm_label.grid(column=3, row=0, sticky="w")
-        return wpm_label
+        return self.create_value_label(text=0, column=3)
 
     def create_timer_label(self):
-        timer_label = tk.Label(self, text=TIMER_LENGTH)
-        timer_label.grid(column=5, row=0, sticky="w")
-        return timer_label
+        return self.create_value_label(text=TIMER_LENGTH, column=5)
 
     def update_labels(self):
         cpm = self.statistics.get_correct_char_count()
@@ -220,7 +265,7 @@ class RowFrame(tk.Frame):
             raise IndexError(f"Word doesn't exist at index: {index}")
 
     def show(self):
-        self.grid(column=0, row=self.row_index, sticky="")
+        self.grid(column=0, row=self.row_index, sticky="", pady=2)
 
     def hide(self):
         self.grid_remove()
