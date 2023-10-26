@@ -107,7 +107,7 @@ class StatisticsFrame(tk.Frame):
 
 class TextMatrixFrame(tk.Frame):
     def __init__(self, parent, starting_words: list[list[str]], statistics: Statistics):
-        super().__init__(master=parent)
+        super().__init__(master=parent, background=CREAM)
         self.grid(column=0, row=2, sticky='', padx=10, pady=10)
         self.configure(width=MATRIX_WIDTH, height=MATRIX_HEIGHT)
         self.word_generator = WordGenerator()
@@ -246,7 +246,7 @@ class TextMatrixFrame(tk.Frame):
 
 class RowFrame(tk.Frame):
     def __init__(self, parent, row_index, words: list[str]):
-        super().__init__(master=parent, width=MATRIX_WIDTH, height=MATRIX_HEIGHT / ROWS_OF_WORDS)
+        super().__init__(master=parent, width=MATRIX_WIDTH, height=MATRIX_HEIGHT / ROWS_OF_WORDS, background=CREAM)
         self.row_index = row_index
         self.show()
         self.word_frames = self.fill(words)
@@ -284,7 +284,7 @@ class RowFrame(tk.Frame):
 
 class WordFrame(tk.Frame):
     def __init__(self, parent, column, word):
-        super().__init__(master=parent)
+        super().__init__(master=parent, background=CREAM)
         self.grid(row=0, column=column, sticky="w", padx=5)
         self.word = word
         self.letter_labels = self.create_labels()
@@ -292,7 +292,7 @@ class WordFrame(tk.Frame):
     def create_labels(self):
         labels = []
         for i, letter in enumerate(self.word):
-            label = tk.Label(self, text=letter, foreground=BLUE, padx=0, font=(FONT_NAME, 12, "bold"))
+            label = tk.Label(self, text=letter, foreground=BLUE, padx=0, font=(FONT_NAME, 12, "bold"), background=CREAM)
             label.grid(row=0, column=i, sticky="w")
             labels.append(label)
         return labels
@@ -305,9 +305,9 @@ class WordFrame(tk.Frame):
         for label in self.letter_labels:
             color = label.cget("foreground")
             if color == RED or color == GREEN:
-                label.configure(background="white")
+                label.configure(background=CREAM)
             else:
-                label.configure(background="white", foreground=BLUE)
+                label.configure(background=CREAM, foreground=BLUE)
 
     def compare_input(self, current_input):
         for i, letter in enumerate(current_input):
