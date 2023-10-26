@@ -11,7 +11,7 @@ MATRIX_HEIGHT = 400
 
 class ButtonFrame(tk.Frame):
     def __init__(self, parent, start_func: Callable, reset_func: Callable):
-        super().__init__(master=parent)
+        super().__init__(master=parent, background=BLUE)
         self.grid(column=0, row=4, sticky='', padx=10, pady=10)
         self.start_func = start_func
         self.reset_func = reset_func
@@ -19,16 +19,26 @@ class ButtonFrame(tk.Frame):
         self.reset_button = self.create_reset_button()
 
     def create_start_button(self):
-        start_button = tk.Button(self, text="Start", font=(FONT_NAME, 8, "bold"), highlightthickness=0,
-                                 command=self.start)
-        start_button.grid(column=0, row=0)
-        return start_button
+        return self.create_button(text="Start", command=self.start, column=0, state="normal")
 
     def create_reset_button(self):
-        reset_btn = tk.Button(self, text="Reset", font=(FONT_NAME, 8, "bold"), highlightthickness=0,
-                              command=self.reset, state="disabled")
-        reset_btn.grid(column=1, row=0)
-        return reset_btn
+        return self.create_button(text="Reset", command=self.reset, column=1, state="disabled")
+
+    def create_button(self, text, command, column, state):
+        button_border = tk.Frame(self, highlightbackground=CREAM, highlightthickness=1, bd=0)
+        button_border.grid(column=column, row=0, padx=80)
+        button = tk.Button(button_border,
+                           text=text,
+                           font=(FONT_NAME, 12, "bold"),
+                           highlightthickness=0,
+                           command=command,
+                           foreground=CREAM,
+                           background=BLUE,
+                           state=state,
+                           border=1,
+                           relief="flat")
+        button.pack()
+        return button
 
     def start(self):
         self.start_func()
@@ -45,7 +55,7 @@ class ButtonFrame(tk.Frame):
 
 class StatisticsFrame(tk.Frame):
     def __init__(self, parent, statistics: Statistics):
-        super().__init__(master=parent)
+        super().__init__(master=parent, background=BLUE)
         self.grid(column=0, row=1, sticky='', padx=10, pady=10)
         self.statistics = statistics
         self.create_leading_labels()
@@ -71,7 +81,8 @@ class StatisticsFrame(tk.Frame):
                          text=text,
                          background=BLUE,
                          foreground=CREAM,
-                         font=(FONT_NAME, 14, "normal"))
+                         font=(FONT_NAME, 14),
+                         underline=-1)
         label.grid(column=column, row=0, sticky="w")
         return label
 
@@ -189,7 +200,7 @@ class TextMatrixFrame(tk.Frame):
             self.column_counter += 1
 
     def is_last_in_row(self):
-        return self.column_counter == WORDS_IN_ROW-1
+        return self.column_counter == WORDS_IN_ROW - 1
 
     def move_to_previous_word(self):
         self.statistics.remove_last()
@@ -347,11 +358,11 @@ class WordFrame(tk.Frame):
 
 class TextInputFrame(tk.Frame):
     def __init__(self, parent, update_notifier: UpdateNotifier):
-        super().__init__(master=parent)
-        #self.grid(column=0, row=3, sticky="")
+        super().__init__(master=parent, background=BLUE)
+        # self.grid(column=0, row=3, sticky="")
         self.current_input = tk.StringVar(value="")
-        self.text_box = tk.Entry(self, textvariable=self.current_input, foreground=BLUE)
-        self.text_box.grid(column=0, row=0, sticky="")
+        self.text_box = tk.Entry(self, textvariable=self.current_input, foreground=BLUE, font=(FONT_NAME, 14))
+        self.text_box.grid(column=0, row=0, sticky="", pady=10)
         self.typed_in_words = []
         self.last_value = ""
         self.is_reset = False
@@ -419,6 +430,3 @@ class TextInputFrame(tk.Frame):
 
     def hide(self):
         self.grid_forget()
-
-
-
