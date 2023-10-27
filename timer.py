@@ -24,6 +24,7 @@ class Timer:
             self.timer = self.window.after(1000, self.count_down, self.timer_count - 1)
         else:
             self.window.after_cancel(self.timer)
+            self.timer_running = False
             self.stopped()
 
     def reset_timer(self):

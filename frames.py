@@ -15,7 +15,6 @@ class ButtonFrame(tk.Frame):
         self.grid(column=0, row=4, sticky='', padx=10, pady=10)
         self.start_func = start_func
         self.reset_func = reset_func
-        self.start_button = self.create_start_button()
         self.reset_button = self.create_reset_button()
 
     def create_start_button(self):
@@ -29,7 +28,7 @@ class ButtonFrame(tk.Frame):
         button_border.grid(column=column, row=0, padx=80)
         button = tk.Button(button_border,
                            text=text,
-                           font=(FONT_NAME, 12, "bold"),
+                           font=(FONT_NAME, BUTTON_SIZE, "bold"),
                            highlightthickness=0,
                            command=command,
                            foreground=CREAM,
@@ -42,11 +41,9 @@ class ButtonFrame(tk.Frame):
 
     def start(self):
         self.start_func()
-        self.start_button.configure(state="disabled")
 
     def reset(self):
         self.reset_func()
-        self.start_button.configure(state="normal")
         self.reset_button.configure(state="disabled")
 
     def stop(self):
@@ -74,14 +71,14 @@ class StatisticsFrame(tk.Frame):
                  padx=10,
                  background=BLUE,
                  foreground=CREAM,
-                 font=(FONT_NAME, 14, "bold")).grid(column=column, row=0, sticky="w")
+                 font=(FONT_NAME, STAT_SIZE, "bold")).grid(column=column, row=0, sticky="w")
 
     def create_value_label(self, text, column):
         label = tk.Label(self,
                          text=text,
                          background=BLUE,
                          foreground=CREAM,
-                         font=(FONT_NAME, 14),
+                         font=(FONT_NAME, STAT_SIZE),
                          underline=-1)
         label.grid(column=column, row=0, sticky="w")
         return label
@@ -126,7 +123,8 @@ class TextMatrixFrame(tk.Frame):
             rows.append(row)
         return rows
 
-    def check_starting_words(self, starting_words: list[list[str]]):
+    @staticmethod
+    def check_starting_words(starting_words: list[list[str]]):
         if len(starting_words) != ROWS_OF_WORDS:
             raise ValueError(f"Unexpected number of rows in starting words! Expected: {ROWS_OF_WORDS}; "
                              f"received: {len(starting_words)}")
@@ -285,14 +283,15 @@ class RowFrame(tk.Frame):
 class WordFrame(tk.Frame):
     def __init__(self, parent, column, word):
         super().__init__(master=parent, background=CREAM)
-        self.grid(row=0, column=column, sticky="w", padx=5)
+        self.grid(row=0, column=column, sticky="w", padx=7)
         self.word = word
         self.letter_labels = self.create_labels()
 
     def create_labels(self):
         labels = []
         for i, letter in enumerate(self.word):
-            label = tk.Label(self, text=letter, foreground=BLUE, padx=0, font=(FONT_NAME, 12, "bold"), background=CREAM)
+            label = tk.Label(self, text=letter, foreground=BLUE, padx=0, font=(FONT_NAME, TEXT_SIZE, "bold"),
+                             background=CREAM)
             label.grid(row=0, column=i, sticky="w")
             labels.append(label)
         return labels
@@ -359,9 +358,9 @@ class WordFrame(tk.Frame):
 class TextInputFrame(tk.Frame):
     def __init__(self, parent, update_notifier: UpdateNotifier):
         super().__init__(master=parent, background=BLUE)
-        # self.grid(column=0, row=3, sticky="")
+        self.grid(column=0, row=3, sticky="")
         self.current_input = tk.StringVar(value="")
-        self.text_box = tk.Entry(self, textvariable=self.current_input, foreground=BLUE, font=(FONT_NAME, 14))
+        self.text_box = tk.Entry(self, textvariable=self.current_input, foreground=BLUE, font=(FONT_NAME, TEXT_SIZE))
         self.text_box.grid(column=0, row=0, sticky="", pady=10)
         self.typed_in_words = []
         self.last_value = ""
@@ -430,3 +429,10 @@ class TextInputFrame(tk.Frame):
 
     def hide(self):
         self.grid_forget()
+
+    def clear(self):
+        self.last_value = ""
+        self.typed_in_words = []
+        self.current_input.set("")
+        self.text_box.update()
+
